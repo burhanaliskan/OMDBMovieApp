@@ -8,7 +8,7 @@
 - [x] UIKit
 - [x] Datasource
 - [x] Protocol and Delegate
-- [x] URLSession with TheMovieDbApi & Codable
+- [x] URLSession with OMDBApi & Codable
 - [x] Cocoapods
 - [x] Firebase
 
