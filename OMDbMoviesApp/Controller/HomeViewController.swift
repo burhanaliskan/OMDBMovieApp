@@ -19,14 +19,22 @@ class HomeViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        configure()
+    }
+    
+    func configure() {
         service.delegate = self
         searchBar.delegate = self
+        setCollectionCell()
+        service.getSearchMovies(with: "fight")
+        Helper.shared.showSpinnerAnimation(spinner: spinner, collectionView: movieCollectionView)
+    }
+    
+    func setCollectionCell() {
         movieCollectionView.dataSource = self
         movieCollectionView.delegate = self
         movieCollectionView.collectionViewLayout = UICollectionViewFlowLayout()
         movieCollectionView.register(UINib(nibName: CellNibName.movieCellNibName, bundle: nil), forCellWithReuseIdentifier: CellIdentifier.movieCellIdentifier)
-        service.getSearchMovies(with: "fight")
-        Helper.shared.showSpinnerAnimation(spinner: spinner, collectionView: movieCollectionView)
     }
 }
 
@@ -84,7 +92,18 @@ extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = movieCollectionView.dequeueReusableCell(withReuseIdentifier: CellIdentifier.movieCellIdentifier , for: indexPath) as! MovieCell
         
-        cell.configure(with: moviesSearchDataList[indexPath.row].picture!, with: moviesSearchDataList[indexPath.row].title!)
+        var imageLink = ""
+        var title = ""
+        
+        if let linkImage = moviesSearchDataList[indexPath.row].picture {
+            imageLink = linkImage
+        }
+        
+        if let movieTitle = moviesSearchDataList[indexPath.row].title {
+            title = movieTitle
+        }
+        
+        cell.configure(with: imageLink, with: title)
         return cell
     }
 }

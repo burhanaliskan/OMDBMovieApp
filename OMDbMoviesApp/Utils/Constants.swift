@@ -36,3 +36,7 @@ enum EventAnalytics {
     static let movieAverageParametersName = "movieAverage"
     static let movieReleaseDateParametersName = "movieReleaseDate"
 }
+
+enum Keywords {
+    static let notFound = "N/A"
+}

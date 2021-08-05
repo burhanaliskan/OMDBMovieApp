@@ -26,6 +26,10 @@ class DetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        viewConfigure()
+    }
+    
+    func viewConfigure() {
         movieTitle.text = ""
         movieDescription.text = ""
         movieAverage.text = ""
@@ -50,12 +54,28 @@ class DetailViewController: UIViewController {
     }
     
     func configure() {
-        movieTitle.text = moviesData?.title
-        movieDescription.text = moviesData?.description
-        movieAverage.text = moviesData?.imdbRating
-        movieRelaseDate.text = moviesData?.releasedDate
         
-        Helper.shared.setImage(with: (moviesData?.picture!)!, with: movieImage)
+        if moviesData?.title != Keywords.notFound {
+            movieTitle.text = moviesData?.title
+        }
+        
+        if moviesData?.description != Keywords.notFound {
+            movieDescription.text = moviesData?.description
+        }
+        
+        if moviesData?.imdbRating != Keywords.notFound {
+            movieAverage.text = moviesData?.imdbRating
+        }
+       
+        if moviesData?.releasedDate != Keywords.notFound {
+            movieRelaseDate.text = moviesData?.releasedDate
+        }
+        
+        if moviesData?.picture != Keywords.notFound {
+            Helper.shared.setImage(with: (moviesData?.picture!)!, with: movieImage)
+        } else {
+            movieImage.image = #imageLiteral(resourceName: "notFound")
+        }
         
         Analytics.logEvent(EventAnalytics.movieTitleName, parameters: [EventAnalytics.movieTitleParametersName : moviesData?.title])
         Analytics.logEvent(EventAnalytics.movieAverageName, parameters: [EventAnalytics.movieAverageParametersName : moviesData?.imdbRating])

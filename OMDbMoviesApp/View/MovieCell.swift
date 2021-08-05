@@ -18,7 +18,17 @@ class MovieCell: UICollectionViewCell {
     
     //MARK: - Configure UI
     func configure(with imageLink: String, with title: String) {
-        movieTitle.text = title
-        Helper.shared.setImage(with: imageLink, with: movieImageView, with: 15)
+        
+        if title != Keywords.notFound {
+            movieTitle.text = title
+        } else {
+            movieTitle.text = "Not Found"
+        }
+        
+        if imageLink != Keywords.notFound {
+            Helper.shared.setImage(with: imageLink, with: movieImageView, with: 15)
+        } else {
+            movieImageView.image = #imageLiteral(resourceName: "notFound")
+        }
     }
 }
