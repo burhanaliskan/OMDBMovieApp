@@ -21,7 +21,7 @@ class DetailViewController: UIViewController {
     var movieId: String?
     
     let service = Service()
-    var moviesData: MovieModel?
+    var moviesData: MoviesData?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,7 +37,10 @@ class DetailViewController: UIViewController {
         
         service.delegate = self
         configureSetImageButton()
-        service.getMovies(with: movieId!)
+        service.getMovies(with: movieId ?? "") { movie in
+            self.moviesData = movie
+            self.configure()
+        }
         Helper.shared.showSpinnerAnimation(spinner: spinner)
     }
     
@@ -55,47 +58,39 @@ class DetailViewController: UIViewController {
     
     func configure() {
         
-        if moviesData?.title != Keywords.notFound {
-            movieTitle.text = moviesData?.title
+        if moviesData?.Title != Keywords.notFound {
+            movieTitle.text = moviesData?.Title
         }
         
-        if moviesData?.description != Keywords.notFound {
-            movieDescription.text = moviesData?.description
+        if moviesData?.Plot != Keywords.notFound {
+            movieDescription.text = moviesData?.Plot
         }
         
         if moviesData?.imdbRating != Keywords.notFound {
             movieAverage.text = moviesData?.imdbRating
         }
        
-        if moviesData?.releasedDate != Keywords.notFound {
-            movieRelaseDate.text = moviesData?.releasedDate
+        if moviesData?.Released != Keywords.notFound {
+            movieRelaseDate.text = moviesData?.Released
         }
         
-        if moviesData?.picture != Keywords.notFound {
-            Helper.shared.setImage(with: (moviesData?.picture!)!, with: movieImage)
+        if moviesData?.Poster != Keywords.notFound {
+            Helper.shared.setImage(with: (moviesData?.Poster ?? ""), with: movieImage)
         } else {
             movieImage.image = #imageLiteral(resourceName: "notFound")
         }
         
-        Analytics.logEvent(EventAnalytics.movieTitleName, parameters: [EventAnalytics.movieTitleParametersName : moviesData?.title])
+        Analytics.logEvent(EventAnalytics.movieTitleName, parameters: [EventAnalytics.movieTitleParametersName : moviesData?.Title])
         Analytics.logEvent(EventAnalytics.movieAverageName, parameters: [EventAnalytics.movieAverageParametersName : moviesData?.imdbRating])
-        Analytics.logEvent(EventAnalytics.movieReleaseDate, parameters: [EventAnalytics.movieReleaseDateParametersName : moviesData?.releasedDate])
+        Analytics.logEvent(EventAnalytics.movieReleaseDate, parameters: [EventAnalytics.movieReleaseDateParametersName : moviesData?.Released])
     }
 }
 
 extension DetailViewController: ServiceDelegate {
     
-    func didUpdateMovies(_ service: Service, movieModel: MovieModel) {
-        DispatchQueue.main.async {
-            self.moviesData = movieModel
-            self.configure()
-            Helper.shared.dismissSpinnerAnimation(spinner: self.spinner)
-        }
-    }
     
     func didFailWithError(error: Error) {
         print(error)
     }
     
-    func didUpdateMoviesSearch(_ service: Service, movieModel: [MovieModel]) {}
 }

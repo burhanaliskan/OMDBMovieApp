@@ -14,7 +14,7 @@ class HomeViewController: UIViewController {
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     
     let service = Service()
-    var moviesSearchDataList: [MovieModel] = []
+    var moviesSearchDataList: MoviesSearchData?
     var index = 0
     
     override func viewWillAppear(_ animated: Bool) {
@@ -26,8 +26,24 @@ class HomeViewController: UIViewController {
         service.delegate = self
         searchBar.delegate = self
         setCollectionCell()
-        service.getSearchMovies(with: "fight")
+        getMovies("fight")
         Helper.shared.showSpinnerAnimation(spinner: spinner, collectionView: movieCollectionView)
+    }
+    
+    func getMovies(_ title: String) {
+        service.getSearchMovies(with: title) { movieSearch in
+            self.moviesSearchDataList = movieSearch
+            
+            if self.moviesSearchDataList?.Search?.count ?? 0 > 0 {
+                Helper.shared.dismissSpinnerAnimation(spinner: self.spinner, collectionView: self.movieCollectionView)
+                self.movieCollectionView.reloadData()
+            } else {
+                let alert = UIAlertController(title: "Error", message: "The movie you searched is not found!!!", preferredStyle: UIAlertController.Style.alert)
+                alert.addAction(UIAlertAction(title: "Try again", style: UIAlertAction.Style.default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+                self.getMovies("fight")
+            }
+        }
     }
     
     func setCollectionCell() {
@@ -40,27 +56,9 @@ class HomeViewController: UIViewController {
 
 //MARK: - ServiceDelegate
 extension HomeViewController: ServiceDelegate {
-    func didUpdateMoviesSearch(_ service: Service, movieModel: [MovieModel]) {
-        DispatchQueue.main.async {
-            self.moviesSearchDataList = movieModel
-            Helper.shared.dismissSpinnerAnimation(spinner: self.spinner, collectionView: self.movieCollectionView)
-            
-            if self.moviesSearchDataList.count > 0 {
-                self.movieCollectionView.reloadData()
-            } else {
-                let alert = UIAlertController(title: "Error", message: "The movie you searched is not found!!!", preferredStyle: UIAlertController.Style.alert)
-                alert.addAction(UIAlertAction(title: "Try again", style: UIAlertAction.Style.default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
-                service.getSearchMovies(with: "fight")
-            }
-        }
-    }
-    
     func didFailWithError(error: Error) {
         print(error)
     }
-    
-    func didUpdateMovies(_ service: Service, movieModel: MovieModel) {}
 }
 
 //MARK: - Segue Transfer
@@ -69,7 +67,7 @@ extension HomeViewController {
         let detailVc = segue.destination as? DetailViewController
         
         if segue.identifier == Segue.goToDetailView {
-                detailVc?.movieId = moviesSearchDataList[index].imdbID
+            detailVc?.movieId = moviesSearchDataList?.Search?[index].imdbID
         }
     }
 }
@@ -78,7 +76,7 @@ extension HomeViewController {
 extension HomeViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let searchBarText = searchBar.text else {return}
-        service.getSearchMovies(with: searchBarText)
+        getMovies(searchBarText)
         self.searchBar.endEditing(true)
     }
 }
@@ -86,7 +84,7 @@ extension HomeViewController: UISearchBarDelegate {
 //MARK: - UICollectionViewDataSource
 extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        moviesSearchDataList.count
+        moviesSearchDataList?.Search?.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -95,11 +93,11 @@ extension HomeViewController: UICollectionViewDataSource {
         var imageLink = ""
         var title = ""
         
-        if let linkImage = moviesSearchDataList[indexPath.row].picture {
+        if let linkImage = moviesSearchDataList?.Search?[indexPath.row].Poster {
             imageLink = linkImage
         }
         
-        if let movieTitle = moviesSearchDataList[indexPath.row].title {
+        if let movieTitle = moviesSearchDataList?.Search?[indexPath.row].Title {
             title = movieTitle
         }
         
